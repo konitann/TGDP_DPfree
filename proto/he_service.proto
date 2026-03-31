@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package he_service;
+
+// Go言語用のパッケージ指定
+option go_package = "./he_service";
+
+// ----------------------------------------
+// 準同型暗号(CKKS)演算を提供するgRPCサービス
+// ----------------------------------------
+service HEService {
+  // 1. 鍵生成とコンテキストの初期化 (keygen.go / context.go 関連)
+  rpc GenerateKeys (KeyGenRequest) returns (KeyGenResponse);
+
+  // 2. 暗号化と復号 (encrypt_decrypt.go 関連)
+  rpc Encrypt (EncryptRequest) returns (EncryptResponse);
+  rpc Decrypt (DecryptRequest) returns (DecryptResponse);
+
+  // 3. 暗号演算 (evaluator.go 関連)
+  // 暗号文同士、または暗号文と平文の加算
+  rpc Add (AddRequest) returns (AddResponse);
+  // 暗号文同士、または暗号文と平文の乗算
+  rpc Multiply (MultiplyRequest) returns (MultiplyResponse);
+}
+
+// ----------------------------------------
+// メッセージ定義
+// ----------------------------------------
+
+// --- 鍵生成 ---
+message KeyGenRequest {
+  // 必要に応じてCKKSのパラメータ（Polynomial DegreeやScaleなど）を指定
+  // 空のままでもサーバー側のデフォルト値を使う設計にできます
+}
+
+message KeyGenResponse {
+  bool success = 1;
+  string message = 2;
+  // Python側で鍵管理をする場合、公開鍵などのシリアライズデータを返すことができます
+  bytes public_key = 3; 
+}
+
+// --- 暗号化 ---
+message EncryptRequest {
+  // CKKS方式で暗号化する実数データの配列
+  repeated double plain_values = 1;
+}
+
+message EncryptResponse {
+  // Lattigoでシリアライズされた暗号文データ
+  bytes ciphertext = 1;
+}
+
+// --- 復号 ---
+message DecryptRequest {
+  // 復号したい暗号文データ
+  bytes ciphertext = 1;
+}
+
+message DecryptResponse {
+  // 復号された実数データの配列
+  repeated double plain_values = 1;
+}
+
+// --- 加算 ---
+message AddRequest {
+  // ベースとなる暗号文
+  bytes ciphertext1 = 1;
+  
+  // オプション1: 暗号文同士の加算の場合
+  bytes ciphertext2 = 2;
+  // オプション2: 暗号文と平文の加算の場合
+  repeated double plain_values = 3;
+}
+
+message AddResponse {
+  // 加算結果の暗号文
+  bytes result_ciphertext = 1;
+}
+
+// --- 乗算 ---
+message MultiplyRequest {
+  // ベースとなる暗号文
+  bytes ciphertext1 = 1;
+  
+  // オプション1: 暗号文同士の乗算の場合
+  bytes ciphertext2 = 2;
+  // オプション2: 暗号文と平文の乗算の場合
+  repeated double plain_values = 3;
+}
+
+message MultiplyResponse {
+  // 乗算結果の暗号文（必要に応じてRelinearization後のデータを返す）
+  bytes result_ciphertext = 1;
+}
