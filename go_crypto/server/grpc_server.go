@@ -68,3 +68,71 @@ func (s *HEServer) Decrypt(ctx context.Context, req *pb.DecryptRequest) (*pb.Dec
 
 	return &pb.DecryptResponse{PlainValues: valuesFloat}, nil
 }
+// grpc_server.go の末尾などに追記
+
+func (s *HEServer) Add(ctx context.Context, req *pb.AddRequest) (*pb.AddResponse, error) {
+	fmt.Println("リクエスト受信: Add")
+
+	ct1 := new(rlwe.Ciphertext)
+	if err := ct1.UnmarshalBinary(req.GetCiphertext1()); err != nil {
+		return nil, fmt.Errorf("ct1の復元に失敗: %v", err)
+	}
+
+	ct2 := new(rlwe.Ciphertext)
+	if len(req.GetCiphertext2()) > 0 {
+		if err := ct2.UnmarshalBinary(req.GetCiphertext2()); err != nil {
+			return nil, fmt.Errorf("ct2の復元に失敗: %v", err)
+		}
+	} else {
+		return nil, fmt.Errorf("ciphertext2が空です")
+	}
+
+	// 加算演算
+	ctOut, err := s.CryptoCtx.Evaluator.AddNew(ct1, ct2)
+	if err != nil {
+		return nil, fmt.Errorf("加算エラー: %v", err)
+	}
+
+	bytesData, err := ctOut.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("加算結果のシリアライズに失敗: %v", err)
+	}
+
+	return &pb.AddResponse{ResultCiphertext: bytesData}, nil
+}
+
+func (s *HEServer) Multiply(ctx context.Context, req *pb.MultiplyRequest) (*pb.MultiplyResponse, error) {
+	fmt.Println("リクエスト受信: Multiply")
+
+	ct1 := new(rlwe.Ciphertext)
+	if err := ct1.UnmarshalBinary(req.GetCiphertext1()); err != nil {
+		return nil, fmt.Errorf("ct1の復元に失敗: %v", err)
+	}
+
+	ct2 := new(rlwe.Ciphertext)
+	if len(req.GetCiphertext2()) > 0 {
+		if err := ct2.UnmarshalBinary(req.GetCiphertext2()); err != nil {
+			return nil, fmt.Errorf("ct2の復元に失敗: %v", err)
+		}
+	} else {
+		return nil, fmt.Errorf("ciphertext2が空です")
+	}
+
+	// 乗算とリニアライゼーション（※サーバー側のCryptoCtxにRelinearization Keyが設定されている必要があります）
+	ctOut, err := s.CryptoCtx.Evaluator.MulRelinNew(ct1, ct2)
+	if err != nil {
+		return nil, fmt.Errorf("乗算(MulRelin)エラー: %v", err)
+	}
+
+	// CKKSでは乗算後にスケールを戻すためのリスケーリングが必要
+	if err := s.CryptoCtx.Evaluator.Rescale(ctOut, ctOut); err != nil {
+		return nil, fmt.Errorf("リスケールエラー: %v", err)
+	}
+
+	bytesData, err := ctOut.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("乗算結果のシリアライズに失敗: %v", err)
+	}
+
+	return &pb.MultiplyResponse{ResultCiphertext: bytesData}, nil
+}

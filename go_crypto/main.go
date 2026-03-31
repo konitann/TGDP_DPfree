@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	fmt.Println("=== 準同型暗号(CKKS) gRPC サーバーを起動します ===")
+	fmt.Println("=== 準同型暗号(CKKS) gRPC サーバーの起動 ===")
 
 	// 1. ポート50051で通信を待ち受ける設定
 	lis, err := net.Listen("tcp", ":50051")
@@ -28,7 +28,12 @@ func main() {
 	}
 
 	// 3. gRPCサーバーのインスタンスを作成
-	grpcServer := grpc.NewServer()
+	// 最大メッセージサイズを50MBに設定
+	maxMsgSize := 50 * 1024 * 1024
+	grpcServer := grpc.NewServer(
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize),
+	)
 
 	// 4. 作成したHEServerをgRPCに登録
 	pb.RegisterHEServiceServer(grpcServer, &server.HEServer{CryptoCtx: cryptoCtx})
