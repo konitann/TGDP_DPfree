@@ -45,6 +45,10 @@ Pythonで鍵管理と機械学習、Goで暗号演算を行う。言語間通信
     ├── he_service_pb2.py        # protocによって自動生成されたPython用gRPCコード
     └── he_service_pb2_grpc.py   # 同上
 
+    ## 実装状況
+    - gRPC経由で暗号化、復号、加算、乗算のテスト確認が官僚
+    - ckksのスケール管理は乗算内において、暗号文の乗算後に必要なrelinearizeとrescaleを実装
+
 
 ## 環境構築と重要な注意事項（トラブルシューティング）
 
