@@ -63,3 +63,6 @@ go mod tidy
 
 # 起動
 go serverを立てるときはgo run main.goを実行する。
+
+### TGDPの実行
+python3 dominating_add_dataset.py --filepath <データセットのパス>
