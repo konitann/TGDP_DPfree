@@ -28,6 +28,8 @@ type HEServiceClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
 	// 暗号文同士、または暗号文と平文の乗算
 	Multiply(ctx context.Context, in *MultiplyRequest, opts ...grpc.CallOption) (*MultiplyResponse, error)
+	// 4. 機械学習用勾配計算
+	ComputeGradient(ctx context.Context, in *GradientRequest, opts ...grpc.CallOption) (*GradientResponse, error)
 }
 
 type hEServiceClient struct {
@@ -83,6 +85,15 @@ func (c *hEServiceClient) Multiply(ctx context.Context, in *MultiplyRequest, opt
 	return out, nil
 }
 
+func (c *hEServiceClient) ComputeGradient(ctx context.Context, in *GradientRequest, opts ...grpc.CallOption) (*GradientResponse, error) {
+	out := new(GradientResponse)
+	err := c.cc.Invoke(ctx, "/he_service.HEService/ComputeGradient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HEServiceServer is the server API for HEService service.
 // All implementations must embed UnimplementedHEServiceServer
 // for forward compatibility
@@ -97,6 +108,8 @@ type HEServiceServer interface {
 	Add(context.Context, *AddRequest) (*AddResponse, error)
 	// 暗号文同士、または暗号文と平文の乗算
 	Multiply(context.Context, *MultiplyRequest) (*MultiplyResponse, error)
+	// 4. 機械学習用勾配計算
+	ComputeGradient(context.Context, *GradientRequest) (*GradientResponse, error)
 	mustEmbedUnimplementedHEServiceServer()
 }
 
@@ -118,6 +131,9 @@ func (UnimplementedHEServiceServer) Add(context.Context, *AddRequest) (*AddRespo
 }
 func (UnimplementedHEServiceServer) Multiply(context.Context, *MultiplyRequest) (*MultiplyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Multiply not implemented")
+}
+func (UnimplementedHEServiceServer) ComputeGradient(context.Context, *GradientRequest) (*GradientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ComputeGradient not implemented")
 }
 func (UnimplementedHEServiceServer) mustEmbedUnimplementedHEServiceServer() {}
 
@@ -222,6 +238,24 @@ func _HEService_Multiply_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HEService_ComputeGradient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GradientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HEServiceServer).ComputeGradient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/he_service.HEService/ComputeGradient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HEServiceServer).ComputeGradient(ctx, req.(*GradientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HEService_ServiceDesc is the grpc.ServiceDesc for HEService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -248,6 +282,10 @@ var HEService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Multiply",
 			Handler:    _HEService_Multiply_Handler,
+		},
+		{
+			MethodName: "ComputeGradient",
+			Handler:    _HEService_ComputeGradient_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

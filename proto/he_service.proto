@@ -21,6 +21,9 @@ service HEService {
   rpc Add (AddRequest) returns (AddResponse);
   // 暗号文同士、または暗号文と平文の乗算
   rpc Multiply (MultiplyRequest) returns (MultiplyResponse);
+  
+  // 4. 機械学習用勾配計算
+  rpc ComputeGradient (GradientRequest) returns (GradientResponse);
 }
 
 // ----------------------------------------
@@ -92,4 +95,19 @@ message MultiplyRequest {
 message MultiplyResponse {
   // 乗算結果の暗号文（必要に応じてRelinearization後のデータを返す）
   bytes result_ciphertext = 1;
+}
+
+// 勾配計算のリクエスト
+message GradientRequest {
+    bytes encrypted_weights = 1;      // 暗号化された現在の重み β
+    repeated double x_batch = 2;      // 平文のデータ X (1次元配列に平坦化して送る)
+    repeated double y_batch = 3;      // 平文のラベル y
+    int32 n_samples = 4;              // サンプル数
+    int32 n_features = 5;             // 特徴量数
+    double lambda_reg = 6;            // L2正則化パラメータ
+}
+
+// 勾配計算のレスポンス
+message GradientResponse {
+    bytes encrypted_gradient = 1;     // 計算された暗号化状態の勾配
 }

@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import he_service_pb2 as proto_dot_he__service__pb2
+import he_service_pb2 as he__service__pb2
 
 GRPC_GENERATED_VERSION = '1.80.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in proto/he_service_pb2_grpc.py depends on'
+        + ' but the generated code in he_service_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -39,28 +39,33 @@ class HEServiceStub(object):
         """
         self.GenerateKeys = channel.unary_unary(
                 '/he_service.HEService/GenerateKeys',
-                request_serializer=proto_dot_he__service__pb2.KeyGenRequest.SerializeToString,
-                response_deserializer=proto_dot_he__service__pb2.KeyGenResponse.FromString,
+                request_serializer=he__service__pb2.KeyGenRequest.SerializeToString,
+                response_deserializer=he__service__pb2.KeyGenResponse.FromString,
                 _registered_method=True)
         self.Encrypt = channel.unary_unary(
                 '/he_service.HEService/Encrypt',
-                request_serializer=proto_dot_he__service__pb2.EncryptRequest.SerializeToString,
-                response_deserializer=proto_dot_he__service__pb2.EncryptResponse.FromString,
+                request_serializer=he__service__pb2.EncryptRequest.SerializeToString,
+                response_deserializer=he__service__pb2.EncryptResponse.FromString,
                 _registered_method=True)
         self.Decrypt = channel.unary_unary(
                 '/he_service.HEService/Decrypt',
-                request_serializer=proto_dot_he__service__pb2.DecryptRequest.SerializeToString,
-                response_deserializer=proto_dot_he__service__pb2.DecryptResponse.FromString,
+                request_serializer=he__service__pb2.DecryptRequest.SerializeToString,
+                response_deserializer=he__service__pb2.DecryptResponse.FromString,
                 _registered_method=True)
         self.Add = channel.unary_unary(
                 '/he_service.HEService/Add',
-                request_serializer=proto_dot_he__service__pb2.AddRequest.SerializeToString,
-                response_deserializer=proto_dot_he__service__pb2.AddResponse.FromString,
+                request_serializer=he__service__pb2.AddRequest.SerializeToString,
+                response_deserializer=he__service__pb2.AddResponse.FromString,
                 _registered_method=True)
         self.Multiply = channel.unary_unary(
                 '/he_service.HEService/Multiply',
-                request_serializer=proto_dot_he__service__pb2.MultiplyRequest.SerializeToString,
-                response_deserializer=proto_dot_he__service__pb2.MultiplyResponse.FromString,
+                request_serializer=he__service__pb2.MultiplyRequest.SerializeToString,
+                response_deserializer=he__service__pb2.MultiplyResponse.FromString,
+                _registered_method=True)
+        self.ComputeGradient = channel.unary_unary(
+                '/he_service.HEService/ComputeGradient',
+                request_serializer=he__service__pb2.GradientRequest.SerializeToString,
+                response_deserializer=he__service__pb2.GradientResponse.FromString,
                 _registered_method=True)
 
 
@@ -105,33 +110,45 @@ class HEServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ComputeGradient(self, request, context):
+        """4. 機械学習用勾配計算
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_HEServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GenerateKeys': grpc.unary_unary_rpc_method_handler(
                     servicer.GenerateKeys,
-                    request_deserializer=proto_dot_he__service__pb2.KeyGenRequest.FromString,
-                    response_serializer=proto_dot_he__service__pb2.KeyGenResponse.SerializeToString,
+                    request_deserializer=he__service__pb2.KeyGenRequest.FromString,
+                    response_serializer=he__service__pb2.KeyGenResponse.SerializeToString,
             ),
             'Encrypt': grpc.unary_unary_rpc_method_handler(
                     servicer.Encrypt,
-                    request_deserializer=proto_dot_he__service__pb2.EncryptRequest.FromString,
-                    response_serializer=proto_dot_he__service__pb2.EncryptResponse.SerializeToString,
+                    request_deserializer=he__service__pb2.EncryptRequest.FromString,
+                    response_serializer=he__service__pb2.EncryptResponse.SerializeToString,
             ),
             'Decrypt': grpc.unary_unary_rpc_method_handler(
                     servicer.Decrypt,
-                    request_deserializer=proto_dot_he__service__pb2.DecryptRequest.FromString,
-                    response_serializer=proto_dot_he__service__pb2.DecryptResponse.SerializeToString,
+                    request_deserializer=he__service__pb2.DecryptRequest.FromString,
+                    response_serializer=he__service__pb2.DecryptResponse.SerializeToString,
             ),
             'Add': grpc.unary_unary_rpc_method_handler(
                     servicer.Add,
-                    request_deserializer=proto_dot_he__service__pb2.AddRequest.FromString,
-                    response_serializer=proto_dot_he__service__pb2.AddResponse.SerializeToString,
+                    request_deserializer=he__service__pb2.AddRequest.FromString,
+                    response_serializer=he__service__pb2.AddResponse.SerializeToString,
             ),
             'Multiply': grpc.unary_unary_rpc_method_handler(
                     servicer.Multiply,
-                    request_deserializer=proto_dot_he__service__pb2.MultiplyRequest.FromString,
-                    response_serializer=proto_dot_he__service__pb2.MultiplyResponse.SerializeToString,
+                    request_deserializer=he__service__pb2.MultiplyRequest.FromString,
+                    response_serializer=he__service__pb2.MultiplyResponse.SerializeToString,
+            ),
+            'ComputeGradient': grpc.unary_unary_rpc_method_handler(
+                    servicer.ComputeGradient,
+                    request_deserializer=he__service__pb2.GradientRequest.FromString,
+                    response_serializer=he__service__pb2.GradientResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -162,8 +179,8 @@ class HEService(object):
             request,
             target,
             '/he_service.HEService/GenerateKeys',
-            proto_dot_he__service__pb2.KeyGenRequest.SerializeToString,
-            proto_dot_he__service__pb2.KeyGenResponse.FromString,
+            he__service__pb2.KeyGenRequest.SerializeToString,
+            he__service__pb2.KeyGenResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -189,8 +206,8 @@ class HEService(object):
             request,
             target,
             '/he_service.HEService/Encrypt',
-            proto_dot_he__service__pb2.EncryptRequest.SerializeToString,
-            proto_dot_he__service__pb2.EncryptResponse.FromString,
+            he__service__pb2.EncryptRequest.SerializeToString,
+            he__service__pb2.EncryptResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -216,8 +233,8 @@ class HEService(object):
             request,
             target,
             '/he_service.HEService/Decrypt',
-            proto_dot_he__service__pb2.DecryptRequest.SerializeToString,
-            proto_dot_he__service__pb2.DecryptResponse.FromString,
+            he__service__pb2.DecryptRequest.SerializeToString,
+            he__service__pb2.DecryptResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -243,8 +260,8 @@ class HEService(object):
             request,
             target,
             '/he_service.HEService/Add',
-            proto_dot_he__service__pb2.AddRequest.SerializeToString,
-            proto_dot_he__service__pb2.AddResponse.FromString,
+            he__service__pb2.AddRequest.SerializeToString,
+            he__service__pb2.AddResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -270,8 +287,35 @@ class HEService(object):
             request,
             target,
             '/he_service.HEService/Multiply',
-            proto_dot_he__service__pb2.MultiplyRequest.SerializeToString,
-            proto_dot_he__service__pb2.MultiplyResponse.FromString,
+            he__service__pb2.MultiplyRequest.SerializeToString,
+            he__service__pb2.MultiplyResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ComputeGradient(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/he_service.HEService/ComputeGradient',
+            he__service__pb2.GradientRequest.SerializeToString,
+            he__service__pb2.GradientResponse.FromString,
             options,
             channel_credentials,
             insecure,

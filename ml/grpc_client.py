@@ -26,6 +26,21 @@ class HEClient:
         res = self.stub.Decrypt(req)
         # protobufの定義に従い plain_values を返す
         return res.plain_values
+    
+    def compute_gradient(self, encrypted_weights, x_batch, y_batch, n_samples, n_features, lambda_reg):
+        """
+        暗号化された重みと平文データを送り、サーバー側で計算された暗号化勾配を取得する
+        """
+        request = he_service_pb2.GradientRequest(
+            encrypted_weights=encrypted_weights,
+            x_batch=x_batch,
+            y_batch=y_batch,
+            n_samples=n_samples,
+            n_features=n_features,
+            lambda_reg=lambda_reg
+        )
+        response = self.stub.ComputeGradient(request)
+        return response.encrypted_gradient
 
     def add(self, ciphertext1, ciphertext2):
         req = he_service_pb2.AddRequest(ciphertext1=ciphertext1, ciphertext2=ciphertext2)
