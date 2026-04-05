@@ -23,9 +23,9 @@ func NewCryptoContext() (*CryptoContext, error) {
 
 	params, err := ckks.NewParametersFromLiteral(ckks.ParametersLiteral{
 		LogN:            14,
-		LogQ:            []int{55, 40, 40, 40, 40, 40, 40, 40}, // 暗号文のレベル（掛け算の可能回数）を決定
-		LogP:            []int{45, 45},                         // 鍵の切り替えに使うパラメータ
-		LogDefaultScale: 40,                                    // 小数点以下の精度を決めるスケール
+		LogQ:            []int{45, 30, 30, 30, 30, 30, 30, 30},
+		LogP:            []int{35, 35},
+		LogDefaultScale: 30,
 	})
 
 	if err != nil {
@@ -36,12 +36,19 @@ func NewCryptoContext() (*CryptoContext, error) {
 	sk, pk := kgen.GenKeyPairNew()
 	rlk := kgen.GenRelinearizationKeyNew(sk)
 
+	// 修正: 回転に必要な「ガロア要素」のリストを取得
+	// 全スロットの回転をサポートするデフォルトのリストを使用します
+	galEls := params.GaloisElementsForInnerSum(1, params.MaxSlots())
+	// 追加: 回転用の鍵（Galois Keys）を生成 (2のべき乗のシフトをサポート)
+    gks := kgen.GenGaloisKeysNew(galEls, sk)
+
 	encoder := ckks.NewEncoder(params)
 	encryptor := rlwe.NewEncryptor(params, pk)
 	decryptor := rlwe.NewDecryptor(params, sk)
 
-	evalKeySet := rlwe.NewMemEvaluationKeySet(rlk)
-	evaluator := ckks.NewEvaluator(params, evalKeySet)
+	// 修正: EvaluationKeySet に GaloisKeys を追加
+    evalKeySet := rlwe.NewMemEvaluationKeySet(rlk, gks...)
+    evaluator := ckks.NewEvaluator(params, evalKeySet)
 
 	fmt.Println("initialized")
 

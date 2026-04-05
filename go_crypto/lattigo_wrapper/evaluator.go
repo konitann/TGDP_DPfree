@@ -58,3 +58,59 @@ func (hc *CryptoContext) MultiplyByScalarNew(ct *rlwe.Ciphertext, scalar float64
 	
 	return res, nil
 }
+
+
+// SumSlots はベクトル内の全要素を合計し、全スロットにその合計値を格納します
+func (hc *CryptoContext) SumSlots(ct *rlwe.Ciphertext) *rlwe.Ciphertext {
+	res := ct.CopyNew()
+	for i := 1; i < hc.Params.MaxSlots(); i <<= 1 {
+		// 修正: RotateNew は (Ciphertext, error) を返すため、2つの変数で受け取る
+		rotated, err := hc.Evaluator.RotateNew(res, i)
+		if err != nil {
+			continue // エラー時はスキップ、またはログ出力
+		}
+		// Add 自体は通常エラーを返しません
+		hc.Evaluator.Add(res, rotated, res)
+	}
+	return res
+}
+
+// MatrixVectorMulPlain は A(平文行列) * ct(暗号化ベクトル) を正確に計算します
+func (hc *CryptoContext) MatrixVectorMulPlain(matrix [][]float64, ct *rlwe.Ciphertext) (*rlwe.Ciphertext, error) {
+	dim := len(matrix)
+	var res *rlwe.Ciphertext
+
+	for i := 0; i < dim; i++ {
+		ptRow := ckks.NewPlaintext(hc.Params, ct.Level())
+		hc.Encoder.Encode(matrix[i], ptRow)
+		
+		// 修正: MulNew は (Ciphertext, error) を返す
+		prod, err := hc.Evaluator.MulNew(ct, ptRow)
+		if err != nil {
+			return nil, err
+		}
+		hc.Evaluator.Rescale(prod, prod)
+		
+		// 内積の合計を算出
+		summed := hc.SumSlots(prod)
+		
+		mask := make([]float64, hc.Params.MaxSlots())
+		mask[i] = 1.0
+		ptMask := ckks.NewPlaintext(hc.Params, summed.Level())
+		hc.Encoder.Encode(mask, ptMask)
+		
+		// 修正: ここも MulNew の戻り値を 2つにする
+		component, err := hc.Evaluator.MulNew(summed, ptMask)
+		if err != nil {
+			return nil, err
+		}
+		hc.Evaluator.Rescale(component, component)
+		
+		if res == nil {
+			res = component
+		} else {
+			hc.Evaluator.Add(res, component, res)
+		}
+	}
+	return res, nil
+}

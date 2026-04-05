@@ -53,8 +53,8 @@ def run_experiment():
     # 2. パラメータ設定
     lambda_reg = 0.5       
     initial_lr = 0.1       
-    num_iterations = 20    # Bootstrappingなしのため深さを抑えた設定
-    epsilon = 1.0          
+    num_iterations = 100    # Bootstrappingなしのため深さを抑えた設定
+    epsilon = 10.0          
     
     # 理論的感度 Δ の計算
     max_beta_norm = 1.0 / lambda_reg
@@ -144,7 +144,7 @@ def run_experiment():
 
     plt.tight_layout()
     plt.savefig(os.path.join(os.path.dirname(__file__), "experiment_results.png"))
-    print("✅ 指標グラフを保存しました: experiment_results.png")
+    
 
 if __name__ == "__main__":
     run_experiment()
