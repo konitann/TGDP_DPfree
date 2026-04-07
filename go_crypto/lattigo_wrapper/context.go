@@ -22,10 +22,10 @@ func NewCryptoContext() (*CryptoContext, error) {
 	fmt.Println("CKKSパラメータ(v6.2.0)を初期化")
 
 	params, err := ckks.NewParametersFromLiteral(ckks.ParametersLiteral{
-		LogN:            14,
-		LogQ:            []int{45, 30, 30, 30, 30, 30, 30, 30},
-		LogP:            []int{35, 35},
-		LogDefaultScale: 30,
+		LogN:            12,
+		LogQ:            []int{40, 25, 25, 25, 25, 25, 25, 25},
+		LogP:            []int{25, 25},
+		LogDefaultScale: 25,
 	})
 
 	if err != nil {
